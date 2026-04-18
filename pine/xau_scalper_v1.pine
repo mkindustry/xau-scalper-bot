@@ -1,0 +1,217 @@
+//@version=5
+// ═══════════════════════════════════════════════════════════════════════════
+// XAU/USD SCALPER BOT v1.0 — Multi-Strategy + Confluence Score
+// Author: Mk | For TradingView Premium
+// Sends JSON webhook to Python backend for macro/news/ML filtering
+// ═══════════════════════════════════════════════════════════════════════════
+indicator("XAU Scalper Bot v1", overlay=true, max_lines_count=500, max_boxes_count=500, max_labels_count=500)
+
+// ─── INPUTS ─────────────────────────────────────────────────────────────────
+grp_strat   = "━━━ STRATEGIES ━━━"
+use_ema     = input.bool(true,  "EMA Stack Scalper",      group=grp_strat)
+use_spike   = input.bool(true,  "Spike Scalper (M1)",     group=grp_strat)
+use_round   = input.bool(true,  "Round Number Reactor",   group=grp_strat)
+use_sweep   = input.bool(true,  "London Liquidity Sweep", group=grp_strat)
+use_ob      = input.bool(true,  "Order Block / FVG",      group=grp_strat)
+
+grp_filt    = "━━━ FILTERS ━━━"
+atr_len     = input.int(14,    "ATR Length",              group=grp_filt)
+atr_min     = input.float(1.5, "ATR Min (no chop)",       group=grp_filt, step=0.1)
+atr_max     = input.float(15., "ATR Max (no chaos)",      group=grp_filt, step=0.5)
+adx_min     = input.int(22,    "ADX Minimum",             group=grp_filt)
+min_score   = input.int(65,    "Confluence Score Min",    group=grp_filt, minval=0, maxval=100)
+
+grp_sess    = "━━━ ICT KILL ZONES (UTC) ━━━"
+use_asia    = input.bool(true,  "Asian Range (00-04)",    group=grp_sess)
+use_lon     = input.bool(true,  "London KZ (07-10)",      group=grp_sess)
+use_ny      = input.bool(true,  "NY KZ (12:30-15)",       group=grp_sess)
+use_sb      = input.bool(true,  "Silver Bullet (15-16)",  group=grp_sess)
+
+grp_risk    = "━━━ RISK ━━━"
+sl_atr      = input.float(1.5, "SL = ATR ×",              group=grp_risk, step=0.1)
+tp1_r       = input.float(1.0, "TP1 (R)",                 group=grp_risk, step=0.1)
+tp2_r       = input.float(2.0, "TP2 (R)",                 group=grp_risk, step=0.1)
+tp3_r       = input.float(3.0, "TP3 (R)",                 group=grp_risk, step=0.1)
+
+grp_wh      = "━━━ WEBHOOK ━━━"
+secret      = input.string("REPLACE_ME", "Webhook Secret", group=grp_wh)
+
+// ─── INDICATEURS CORE ───────────────────────────────────────────────────────
+ema8   = ta.ema(close, 8)
+ema21  = ta.ema(close, 21)
+ema55  = ta.ema(close, 55)
+ema200 = ta.ema(close, 200)
+atr    = ta.atr(atr_len)
+[diP, diM, adx] = ta.dmi(14, 14)
+rsi    = ta.rsi(close, 14)
+
+// Volatilité OK
+vol_ok = atr >= atr_min and atr <= atr_max
+
+// ─── SESSIONS (UTC → TradingView uses exchange time, so we convert) ─────────
+// XAU is generally on FX — use UTC hours directly
+h = hour(time, "UTC")
+m = minute(time, "UTC")
+timef = h * 100 + m  // 0930 = 930
+
+in_asia = use_asia and timef >= 0    and timef < 400
+in_lon  = use_lon  and timef >= 700  and timef < 1000
+in_ny   = use_ny   and timef >= 1230 and timef < 1500
+in_sb   = use_sb   and timef >= 1500 and timef < 1600
+in_kz   = in_asia or in_lon or in_ny or in_sb
+
+session_name = in_asia ? "ASIA" : in_lon ? "LONDON" : in_ny ? "NY" : in_sb ? "SILVER_BULLET" : "OFF"
+
+// ─── 1) EMA STACK SCALPER ───────────────────────────────────────────────────
+ema_bull = ema8 > ema21 and ema21 > ema55 and close > ema8
+ema_bear = ema8 < ema21 and ema21 < ema55 and close < ema8
+// Pullback entry: price touched ema21 and bounced
+pb_long  = ema_bull and low <= ema21 and close > open and close > ema21
+pb_short = ema_bear and high >= ema21 and close < open and close < ema21
+ema_sig_long  = use_ema and pb_long  and adx >= adx_min
+ema_sig_short = use_ema and pb_short and adx >= adx_min
+
+// ─── 2) SPIKE SCALPER (explosive M1 candle) ─────────────────────────────────
+candle_range = high - low
+body         = math.abs(close - open)
+is_spike     = candle_range > atr * 2.0 and body / candle_range > 0.6
+spike_long   = use_spike and is_spike and close > open and close > ema21
+spike_short  = use_spike and is_spike and close < open and close < ema21
+
+// ─── 3) ROUND NUMBER REACTOR ────────────────────────────────────────────────
+// Nearest $50 level
+nearest_50 = math.round(close / 50) * 50
+dist_to_50 = math.abs(close - nearest_50)
+near_round = dist_to_50 < atr * 0.5
+// Rejection wicks
+upper_wick = high - math.max(close, open)
+lower_wick = math.min(close, open) - low
+rej_long   = use_round and near_round and lower_wick > body * 1.5 and close > open and low < nearest_50 and close > nearest_50
+rej_short  = use_round and near_round and upper_wick > body * 1.5 and close < open and high > nearest_50 and close < nearest_50
+
+// ─── 4) LONDON LIQUIDITY SWEEP ──────────────────────────────────────────────
+// Asian range
+var float asia_high = na
+var float asia_low  = na
+is_asia_bar = h >= 0 and h < 7  // extend to London open for sweep detection
+if (h == 0 and m == 0)
+    asia_high := high
+    asia_low  := low
+if is_asia_bar
+    asia_high := math.max(nz(asia_high, high), high)
+    asia_low  := math.min(nz(asia_low,  low),  low)
+
+sweep_long  = use_sweep and in_lon and low < asia_low  and close > asia_low  and close > open
+sweep_short = use_sweep and in_lon and high > asia_high and close < asia_high and close < open
+
+// ─── 5) ORDER BLOCK / FVG (simplifié) ───────────────────────────────────────
+// FVG bullish: low[0] > high[2] (gap on 3-bar pattern)
+fvg_bull = low > high[2]
+fvg_bear = high < low[2]
+// OB = last opposite candle before impulsive move
+impulse_up    = close > open and (close - open) > atr * 1.2
+impulse_down  = close < open and (open - close) > atr * 1.2
+ob_bull_zone  = impulse_up and open[1] > close[1]    // last bearish before impulse up
+ob_bear_zone  = impulse_down and close[1] > open[1]  // last bullish before impulse down
+
+smc_long  = use_ob and fvg_bull and ema_bull
+smc_short = use_ob and fvg_bear and ema_bear
+
+// ─── CONFLUENCE SCORE (0–100) ───────────────────────────────────────────────
+score_long  = 0
+score_short = 0
+
+// EMA stack (20)
+score_long  += ema_bull ? 20 : 0
+score_short += ema_bear ? 20 : 0
+// ADX strength (15)
+score_long  += adx >= adx_min ? 15 : 0
+score_short += adx >= adx_min ? 15 : 0
+// Volatility OK (10)
+score_long  += vol_ok ? 10 : 0
+score_short += vol_ok ? 10 : 0
+// Kill zone (15)
+score_long  += in_kz ? 15 : 0
+score_short += in_kz ? 15 : 0
+// RSI confluence (10)
+score_long  += rsi > 50 and rsi < 70 ? 10 : 0
+score_short += rsi < 50 and rsi > 30 ? 10 : 0
+// SMC confluence (15)
+score_long  += (fvg_bull or ob_bull_zone) ? 15 : 0
+score_short += (fvg_bear or ob_bear_zone) ? 15 : 0
+// Round number setup (10)
+score_long  += rej_long  ? 10 : 0
+score_short += rej_short ? 10 : 0
+// HTF bias — price above EMA200 (5)
+score_long  += close > ema200 ? 5 : 0
+score_short += close < ema200 ? 5 : 0
+
+// ─── AGGREGATE SIGNAL ───────────────────────────────────────────────────────
+any_long  = ema_sig_long  or spike_long  or rej_long  or sweep_long  or smc_long
+any_short = ema_sig_short or spike_short or rej_short or sweep_short or smc_short
+
+final_long  = any_long  and vol_ok and in_kz and score_long  >= min_score
+final_short = any_short and vol_ok and in_kz and score_short >= min_score
+
+// ─── SETUP TYPE DETECTION ───────────────────────────────────────────────────
+setup_long  = ema_sig_long  ? "EMA_STACK"      : spike_long  ? "SPIKE"  : rej_long  ? "ROUND_NUMBER" : sweep_long  ? "LIQ_SWEEP" : smc_long  ? "SMC_OB_FVG" : "UNKNOWN"
+setup_short = ema_sig_short ? "EMA_STACK"      : spike_short ? "SPIKE"  : rej_short ? "ROUND_NUMBER" : sweep_short ? "LIQ_SWEEP" : smc_short ? "SMC_OB_FVG" : "UNKNOWN"
+
+// ─── ENTRY / SL / TP CALCULATION ────────────────────────────────────────────
+entry_l = close
+sl_l    = close - atr * sl_atr
+r_l     = entry_l - sl_l
+tp1_l   = entry_l + r_l * tp1_r
+tp2_l   = entry_l + r_l * tp2_r
+tp3_l   = entry_l + r_l * tp3_r
+
+entry_s = close
+sl_s    = close + atr * sl_atr
+r_s     = sl_s - entry_s
+tp1_s   = entry_s - r_s * tp1_r
+tp2_s   = entry_s - r_s * tp2_r
+tp3_s   = entry_s - r_s * tp3_r
+
+// ─── PLOTS ──────────────────────────────────────────────────────────────────
+plot(ema8,  "EMA8",  color=color.new(color.yellow, 0))
+plot(ema21, "EMA21", color=color.new(color.orange, 0))
+plot(ema55, "EMA55", color=color.new(color.red,    0))
+plot(ema200,"EMA200",color=color.new(color.white,  0), linewidth=2)
+
+// Session background
+bgcolor(in_asia ? color.new(color.blue,   92) : in_lon  ? color.new(color.green, 92) : in_ny   ? color.new(color.orange,92) : in_sb   ? color.new(color.purple,92) : na, title="Kill Zone BG")
+
+// Signal arrows
+plotshape(final_long,  "BUY",  shape.triangleup,   location.belowbar, color.lime,  size=size.small, text="BUY")
+plotshape(final_short, "SELL", shape.triangledown, location.abovebar, color.red,   size=size.small, text="SELL")
+
+// Asian range lines
+plot(is_asia_bar ? asia_high : na, "Asia High", color=color.new(color.aqua, 0), style=plot.style_linebr)
+plot(is_asia_bar ? asia_low  : na, "Asia Low",  color=color.new(color.aqua, 0), style=plot.style_linebr)
+
+// Info table
+var table info = table.new(position.top_right, 2, 6, border_width=1)
+if barstate.islast
+    table.cell(info, 0, 0, "Session",   bgcolor=color.gray,   text_color=color.white)
+    table.cell(info, 1, 0, session_name,bgcolor=color.black,  text_color=color.yellow)
+    table.cell(info, 0, 1, "ATR",       bgcolor=color.gray,   text_color=color.white)
+    table.cell(info, 1, 1, str.tostring(atr, "#.##"),         bgcolor=color.black, text_color=vol_ok ? color.lime : color.red)
+    table.cell(info, 0, 2, "ADX",       bgcolor=color.gray,   text_color=color.white)
+    table.cell(info, 1, 2, str.tostring(adx, "#.#"),          bgcolor=color.black, text_color=adx >= adx_min ? color.lime : color.red)
+    table.cell(info, 0, 3, "Score L",   bgcolor=color.gray,   text_color=color.white)
+    table.cell(info, 1, 3, str.tostring(score_long),          bgcolor=color.black, text_color=score_long  >= min_score ? color.lime : color.gray)
+    table.cell(info, 0, 4, "Score S",   bgcolor=color.gray,   text_color=color.white)
+    table.cell(info, 1, 4, str.tostring(score_short),         bgcolor=color.black, text_color=score_short >= min_score ? color.lime : color.gray)
+    table.cell(info, 0, 5, "Price",     bgcolor=color.gray,   text_color=color.white)
+    table.cell(info, 1, 5, str.tostring(close, "#.##"),       bgcolor=color.black, text_color=color.white)
+
+// ─── WEBHOOK JSON ALERT ─────────────────────────────────────────────────────
+// The Python backend will enrich this with macro/news/ML before dispatching
+alert_json_long = '{"secret":"' + secret + '","symbol":"XAUUSD","side":"BUY","setup":"' + setup_long + '","session":"' + session_name + '","score":' + str.tostring(score_long) + ',"entry":' + str.tostring(entry_l, "#.##") + ',"sl":' + str.tostring(sl_l, "#.##") + ',"tp1":' + str.tostring(tp1_l, "#.##") + ',"tp2":' + str.tostring(tp2_l, "#.##") + ',"tp3":' + str.tostring(tp3_l, "#.##") + ',"atr":' + str.tostring(atr, "#.##") + ',"adx":' + str.tostring(adx, "#.#") + ',"rsi":' + str.tostring(rsi, "#.#") + ',"time":"' + str.tostring(time) + '"}'
+
+alert_json_short = '{"secret":"' + secret + '","symbol":"XAUUSD","side":"SELL","setup":"' + setup_short + '","session":"' + session_name + '","score":' + str.tostring(score_short) + ',"entry":' + str.tostring(entry_s, "#.##") + ',"sl":' + str.tostring(sl_s, "#.##") + ',"tp1":' + str.tostring(tp1_s, "#.##") + ',"tp2":' + str.tostring(tp2_s, "#.##") + ',"tp3":' + str.tostring(tp3_s, "#.##") + ',"atr":' + str.tostring(atr, "#.##") + ',"adx":' + str.tostring(adx, "#.#") + ',"rsi":' + str.tostring(rsi, "#.#") + ',"time":"' + str.tostring(time) + '"}'
+
+if final_long
+    alert(alert_json_long, alert.freq_once_per_bar_close)
+if final_short
+    alert(alert_json_short, alert.freq_once_per_bar_close)
