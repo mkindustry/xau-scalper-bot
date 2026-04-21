@@ -1,0 +1,305 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--ok:#1D9E75;--warn:#BA7517;--err:#E24B4A;--ok-bg:#E1F5EE;--warn-bg:#FAEEDA;--err-bg:#FCEBEB;--ok-t:#085041;--warn-t:#633806;--err-t:#501313}
+.dashboard{padding:1rem 0;font-size:13px}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.header-left{display:flex;align-items:center;gap:10px}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.title-main{font-size:16px;font-weight:500;color:var(--color-text-primary)}
+.title-sub{font-size:11px;color:var(--color-text-secondary);font-family:var(--font-mono)}
+.refresh-btn{font-size:11px;padding:5px 12px;cursor:pointer;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary)}
+.refresh-btn:hover{background:var(--color-background-secondary)}
+.grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:1rem}
+.stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;text-align:center}
+.stat-label{font-size:10px;color:var(--color-text-secondary);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.stat-val{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+.stat-sub{font-size:10px;color:var(--color-text-secondary);margin-top:2px}
+.section{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-secondary);margin:1rem 0 6px}
+.checks{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem}
+.check-row{display:flex;align-items:center;justify-content:space-between;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:8px 12px}
+.check-left{display:flex;align-items:center;gap:8px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-ok{background:var(--ok)}.dot-err{background:var(--err)}.dot-warn{background:var(--warn)}.dot-loading{background:var(--color-border-secondary);animation:pulse 1s infinite}
+.check-name{font-size:12px;font-weight:500;color:var(--color-text-primary)}
+.check-desc{font-size:11px;color:var(--color-text-secondary);margin-top:1px}
+.check-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:500;white-space:nowrap}
+.b-ok{background:var(--ok-bg);color:var(--ok-t)}
+.b-err{background:var(--err-bg);color:var(--err-t)}
+.b-warn{background:var(--warn-bg);color:var(--warn-t)}
+.b-loading{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.panel{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem;margin-bottom:10px}
+.panel-title{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.log{font-family:var(--font-mono);font-size:11px;color:var(--color-text-secondary);background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;max-height:120px;overflow-y:auto;line-height:1.7}
+.log-line{display:block}.log-ok{color:var(--ok)}.log-err{color:var(--err)}.log-warn{color:var(--warn)}.log-info{color:var(--color-text-info)}
+.test-btn{width:100%;font-size:12px;padding:8px;cursor:pointer;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-primary);margin-top:8px;font-weight:500}
+.test-btn:hover{background:var(--color-background-secondary)}
+.test-btn:disabled{opacity:.4;cursor:not-allowed}
+.sentiment-bar{height:6px;border-radius:3px;background:var(--err-bg);margin:6px 0;overflow:hidden}
+.sentiment-fill{height:100%;border-radius:3px;background:var(--ok);transition:width .6s ease}
+.sentiment-labels{display:flex;justify-content:space-between;font-size:10px;font-family:var(--font-mono)}
+.sentiment-labels .bull{color:var(--ok)}.sentiment-labels .bear{color:var(--err)}
+.flex-row{display:flex;gap:8px}
+.flex-row > *{flex:1}
+.divider{height:0.5px;background:var(--color-border-tertiary);margin:1rem 0}
+.timestamp{font-size:10px;font-family:var(--font-mono);color:var(--color-text-secondary);text-align:right}
+</style>
+
+<div class="dashboard">
+
+<div class="header">
+  <div class="header-left">
+    <div class="pulse" id="mainPulse"></div>
+    <div>
+      <div class="title-main">XAU Scalper Bot — Dashboard</div>
+      <div class="title-sub" id="mainUrl">web-production-63ee.up.railway.app</div>
+    </div>
+  </div>
+  <button class="refresh-btn" onclick="runAllChecks()">Rafraîchir tout ↻</button>
+</div>
+
+<div class="grid-4">
+  <div class="stat"><div class="stat-label">Backend</div><div class="stat-val" id="s-backend">...</div><div class="stat-sub" id="s-backend-sub">Railway</div></div>
+  <div class="stat"><div class="stat-label">Sentiment</div><div class="stat-val" id="s-sentiment">...</div><div class="stat-sub" id="s-sentiment-sub">NewsAPI</div></div>
+  <div class="stat"><div class="stat-label">Latence</div><div class="stat-val" id="s-latency">...</div><div class="stat-sub">ms</div></div>
+  <div class="stat"><div class="stat-label">Signaux</div><div class="stat-val" id="s-signals">0</div><div class="stat-sub">cette session</div></div>
+</div>
+
+<div class="section">Statut des composants</div>
+<div class="checks">
+  <div class="check-row">
+    <div class="check-left">
+      <div class="dot dot-loading" id="dot-api"></div>
+      <div><div class="check-name">API Backend</div><div class="check-desc" id="desc-api">Vérification en cours...</div></div>
+    </div>
+    <span class="check-badge b-loading" id="badge-api">—</span>
+  </div>
+  <div class="check-row">
+    <div class="check-left">
+      <div class="dot dot-loading" id="dot-sent"></div>
+      <div><div class="check-name">Module Sentiment</div><div class="check-desc" id="desc-sent">Vérification en cours...</div></div>
+    </div>
+    <span class="check-badge b-loading" id="badge-sent">—</span>
+  </div>
+  <div class="check-row">
+    <div class="check-left">
+      <div class="dot dot-loading" id="dot-docs"></div>
+      <div><div class="check-name">API Docs (Swagger)</div><div class="check-desc" id="desc-docs">Vérification en cours...</div></div>
+    </div>
+    <span class="check-badge b-loading" id="badge-docs">—</span>
+  </div>
+  <div class="check-row">
+    <div class="check-left">
+      <div class="dot dot-warn" id="dot-wh"></div>
+      <div><div class="check-name">Webhook endpoint</div><div class="check-desc" id="desc-wh">En attente du test manuel</div></div>
+    </div>
+    <span class="check-badge b-warn" id="badge-wh">En attente</span>
+  </div>
+  <div class="check-row">
+    <div class="check-left">
+      <div class="dot dot-warn" id="dot-tg"></div>
+      <div><div class="check-name">Telegram Bot</div><div class="check-desc" id="desc-tg">Token requis pour tester</div></div>
+    </div>
+    <span class="check-badge b-warn" id="badge-tg">Non configuré</span>
+  </div>
+</div>
+
+<div class="flex-row">
+  <div class="panel">
+    <div class="panel-title">Sentiment géopolitique XAU <span id="sent-time" style="font-size:10px;font-weight:400;color:var(--color-text-secondary)">—</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
+      <span style="color:var(--color-text-secondary)">Biais global :</span>
+      <span style="font-weight:500" id="sent-bias">—</span>
+    </div>
+    <div class="sentiment-bar"><div class="sentiment-fill" id="sent-fill" style="width:50%"></div></div>
+    <div class="sentiment-labels"><span class="bull" id="sent-bull">BULLISH 0%</span><span class="bear" id="sent-bear">0% BEARISH</span></div>
+    <div style="margin-top:8px;font-size:11px;color:var(--color-text-secondary)">Articles analysés : <span id="sent-count" style="font-weight:500;color:var(--color-text-primary)">—</span></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Test Webhook Signal</div>
+    <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:8px">Envoie un signal BUY simulé vers le backend et vérifie la réponse.</div>
+    <button class="test-btn" id="testBtn" onclick="testWebhook()">Envoyer signal test BUY ↗</button>
+    <div id="wh-result" style="margin-top:8px;font-size:11px;font-family:var(--font-mono);color:var(--color-text-secondary);display:none"></div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-title">Logs en temps réel <span id="log-count" style="font-size:10px;font-weight:400;color:var(--color-text-secondary)">0 entrées</span></div>
+  <div class="log" id="logArea"><span class="log-line log-info">Dashboard initialisé — lancement des vérifications...</span></div>
+</div>
+
+<div class="divider"></div>
+<div class="timestamp" id="lastCheck">Dernière vérification : —</div>
+
+</div>
+
+<script>
+const BASE = 'https://web-production-63ee.up.railway.app';
+let signalCount = 0;
+
+function log(msg, type='info'){
+  const area = document.getElementById('logArea');
+  const line = document.createElement('span');
+  line.className = `log-line log-${type}`;
+  const ts = new Date().toLocaleTimeString('fr-FR');
+  line.textContent = `[${ts}] ${msg}`;
+  area.appendChild(line);
+  area.scrollTop = area.scrollHeight;
+  document.getElementById('log-count').textContent = area.children.length + ' entrées';
+}
+
+function setCheck(id, status, badge, desc){
+  const dot = document.getElementById('dot-'+id);
+  const bdg = document.getElementById('badge-'+id);
+  const dsc = document.getElementById('desc-'+id);
+  dot.className = 'dot dot-' + (status==='ok'?'ok':status==='err'?'err':'warn');
+  bdg.className = 'check-badge b-' + (status==='ok'?'ok':status==='err'?'err':'warn');
+  bdg.textContent = badge;
+  if(dsc) dsc.textContent = desc;
+}
+
+async function checkAPI(){
+  const t0 = Date.now();
+  try {
+    const r = await fetch(BASE+'/', {signal: AbortSignal.timeout(8000)});
+    const d = await r.json();
+    const ms = Date.now()-t0;
+    if(d.status === 'ok'){
+      setCheck('api','ok','✓ Online', `service: ${d.service}`);
+      document.getElementById('s-backend').textContent = '✓';
+      document.getElementById('s-backend').style.color = 'var(--ok)';
+      document.getElementById('s-latency').textContent = ms;
+      document.getElementById('s-latency').style.color = ms < 500 ? 'var(--ok)' : 'var(--warn)';
+      document.getElementById('mainPulse').style.background = 'var(--ok)';
+      log(`API OK — ${d.service} — ${ms}ms`, 'ok');
+    } else {
+      setCheck('api','err','Erreur', JSON.stringify(d));
+      log('API réponse inattendue: '+JSON.stringify(d),'err');
+    }
+  } catch(e){
+    setCheck('api','err','Hors ligne', e.message);
+    document.getElementById('s-backend').textContent = '✗';
+    document.getElementById('s-backend').style.color = 'var(--err)';
+    document.getElementById('mainPulse').style.background = 'var(--err)';
+    log('API ERREUR: '+e.message,'err');
+  }
+}
+
+async function checkSentiment(){
+  try {
+    const r = await fetch(BASE+'/sentiment/summary', {signal: AbortSignal.timeout(15000)});
+    const d = await r.json();
+    const bias = d.overall_bias || 'MIXED';
+    const bull = d.bull_pct || 0;
+    const bear = d.bear_pct || 0;
+    setCheck('sent','ok','✓ Actif', `${bias} — bull ${bull}% / bear ${bear}%`);
+    document.getElementById('s-sentiment').textContent = bias;
+    document.getElementById('s-sentiment').style.color = bias==='BULLISH'?'var(--ok)':bias==='BEARISH'?'var(--err)':'var(--color-text-primary)';
+    document.getElementById('s-sentiment-sub').textContent = d.high_urgency_count ? d.high_urgency_count+' urgents' : 'Aucune urgence';
+    document.getElementById('sent-bias').textContent = bias;
+    document.getElementById('sent-fill').style.width = bull+'%';
+    document.getElementById('sent-bull').textContent = 'BULLISH '+bull+'%';
+    document.getElementById('sent-bear').textContent = bear+'% BEARISH';
+    document.getElementById('sent-time').textContent = d.fetched_at ? d.fetched_at.slice(11,16)+' UTC' : '';
+    document.getElementById('sent-count').textContent = d.top_urgent?.length || '0 (clés API requises)';
+    log(`Sentiment: ${bias} — bull ${bull}% / bear ${bear}%`, bias==='BULLISH'?'ok':bias==='BEARISH'?'err':'info');
+  } catch(e){
+    setCheck('sent','err','Erreur', e.message);
+    log('Sentiment ERREUR: '+e.message,'err');
+  }
+}
+
+async function checkDocs(){
+  try {
+    const r = await fetch(BASE+'/docs', {signal: AbortSignal.timeout(8000)});
+    if(r.ok){
+      setCheck('docs','ok','✓ Disponible', 'Swagger UI accessible');
+      log('Swagger UI OK', 'ok');
+    } else {
+      setCheck('docs','err','Erreur '+r.status, 'Docs inaccessibles');
+    }
+  } catch(e){
+    setCheck('docs','err','Erreur', e.message);
+    log('Docs ERREUR: '+e.message,'err');
+  }
+}
+
+async function testWebhook(){
+  const btn = document.getElementById('testBtn');
+  const res = document.getElementById('wh-result');
+  btn.disabled = true;
+  btn.textContent = 'Envoi en cours...';
+  res.style.display = 'block';
+  res.style.color = 'var(--color-text-secondary)';
+  res.textContent = 'En attente de réponse...';
+  log('Test webhook lancé — signal BUY simulé...', 'info');
+
+  const payload = {
+    secret: 'xau2024secretbot',
+    symbol: 'XAUUSD',
+    side: 'BUY',
+    setup: 'EMA_STACK',
+    session: 'LONDON',
+    score: 78,
+    entry: '3320.50',
+    sl: '3312.80',
+    tp1: '3328.20',
+    tp2: '3335.90',
+    tp3: '3343.60',
+    atr: '5.20',
+    adx: '28.5',
+    rsi: '54.2',
+    time: String(Date.now())
+  };
+
+  try {
+    const r = await fetch(BASE+'/webhook', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(20000)
+    });
+    const d = await r.json();
+    const status = d.status;
+
+    if(status === 'dispatched'){
+      setCheck('wh','ok','✓ Signal envoyé', 'Webhook → Telegram OK');
+      res.style.color = 'var(--ok)';
+      res.textContent = '✓ Dispatched — vérifie Telegram !';
+      signalCount++;
+      document.getElementById('s-signals').textContent = signalCount;
+      log('Signal dispatched! ML prob: '+(d.ml_prob||'N/A')+' — Telegram ✓', 'ok');
+    } else if(status === 'rejected'){
+      setCheck('wh','warn','Rejeté: '+d.reason, 'Signal filtré par le backend');
+      res.style.color = 'var(--warn)';
+      res.textContent = '⚠ Rejeté — raison: '+d.reason+(d.details? ' / '+JSON.stringify(d.details):'');
+      log('Signal rejeté: '+d.reason, 'warn');
+    } else {
+      res.textContent = JSON.stringify(d);
+      log('Réponse: '+JSON.stringify(d),'info');
+    }
+  } catch(e){
+    setCheck('wh','err','Erreur', e.message);
+    res.style.color = 'var(--err)';
+    res.textContent = '✗ Erreur: '+e.message;
+    log('Webhook ERREUR: '+e.message,'err');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Envoyer signal test BUY ↗';
+}
+
+async function runAllChecks(){
+  log('--- Vérification complète lancée ---','info');
+  document.getElementById('lastCheck').textContent = 'Dernière vérification : '+new Date().toLocaleTimeString('fr-FR');
+  await checkAPI();
+  await checkSentiment();
+  await checkDocs();
+  log('--- Vérification terminée ---','info');
+}
+
+runAllChecks();
+setInterval(runAllChecks, 60000);
+</script>
