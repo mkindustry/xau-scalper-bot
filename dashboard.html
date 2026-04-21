@@ -291,7 +291,7 @@ function setStatus(id,state,badge,desc){
 async function checkAPI(){
   const t0=Date.now();
   try{
-    const r=await fetch(BASE+'/',{signal:AbortSignal.timeout(8000)});
+    const r=await fetch(BASE+'/health',{signal:AbortSignal.timeout(8000)});
     const d=await r.json();
     const ms=Date.now()-t0;
     if(d.status==='ok'){
