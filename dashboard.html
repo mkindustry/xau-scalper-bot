@@ -1,305 +1,456 @@
-
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TRADESWITHMK BOT — Dashboard</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--ok:#1D9E75;--warn:#BA7517;--err:#E24B4A;--ok-bg:#E1F5EE;--warn-bg:#FAEEDA;--err-bg:#FCEBEB;--ok-t:#085041;--warn-t:#633806;--err-t:#501313}
-.dashboard{padding:1rem 0;font-size:13px}
-.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
-.header-left{display:flex;align-items:center;gap:10px}
-.pulse{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pulse 1.8s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.title-main{font-size:16px;font-weight:500;color:var(--color-text-primary)}
-.title-sub{font-size:11px;color:var(--color-text-secondary);font-family:var(--font-mono)}
-.refresh-btn{font-size:11px;padding:5px 12px;cursor:pointer;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary)}
-.refresh-btn:hover{background:var(--color-background-secondary)}
-.grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:1rem}
-.stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;text-align:center}
-.stat-label{font-size:10px;color:var(--color-text-secondary);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
-.stat-val{font-size:18px;font-weight:500;color:var(--color-text-primary)}
-.stat-sub{font-size:10px;color:var(--color-text-secondary);margin-top:2px}
-.section{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-secondary);margin:1rem 0 6px}
-.checks{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem}
-.check-row{display:flex;align-items:center;justify-content:space-between;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:8px 12px}
-.check-left{display:flex;align-items:center;gap:8px}
-.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.dot-ok{background:var(--ok)}.dot-err{background:var(--err)}.dot-warn{background:var(--warn)}.dot-loading{background:var(--color-border-secondary);animation:pulse 1s infinite}
-.check-name{font-size:12px;font-weight:500;color:var(--color-text-primary)}
-.check-desc{font-size:11px;color:var(--color-text-secondary);margin-top:1px}
-.check-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:500;white-space:nowrap}
-.b-ok{background:var(--ok-bg);color:var(--ok-t)}
-.b-err{background:var(--err-bg);color:var(--err-t)}
-.b-warn{background:var(--warn-bg);color:var(--warn-t)}
-.b-loading{background:var(--color-background-secondary);color:var(--color-text-secondary)}
-.panel{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem;margin-bottom:10px}
-.panel-title{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
-.log{font-family:var(--font-mono);font-size:11px;color:var(--color-text-secondary);background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;max-height:120px;overflow-y:auto;line-height:1.7}
-.log-line{display:block}.log-ok{color:var(--ok)}.log-err{color:var(--err)}.log-warn{color:var(--warn)}.log-info{color:var(--color-text-info)}
-.test-btn{width:100%;font-size:12px;padding:8px;cursor:pointer;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-primary);margin-top:8px;font-weight:500}
-.test-btn:hover{background:var(--color-background-secondary)}
-.test-btn:disabled{opacity:.4;cursor:not-allowed}
-.sentiment-bar{height:6px;border-radius:3px;background:var(--err-bg);margin:6px 0;overflow:hidden}
-.sentiment-fill{height:100%;border-radius:3px;background:var(--ok);transition:width .6s ease}
-.sentiment-labels{display:flex;justify-content:space-between;font-size:10px;font-family:var(--font-mono)}
-.sentiment-labels .bull{color:var(--ok)}.sentiment-labels .bear{color:var(--err)}
-.flex-row{display:flex;gap:8px}
-.flex-row > *{flex:1}
-.divider{height:0.5px;background:var(--color-border-tertiary);margin:1rem 0}
-.timestamp{font-size:10px;font-family:var(--font-mono);color:var(--color-text-secondary);text-align:right}
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --ok:#1D9E75;--warn:#BA7517;--err:#E24B4A;
+    --ok-bg:#E1F5EE;--warn-bg:#FAEEDA;--err-bg:#FCEBEB;
+    --ok-t:#085041;--warn-t:#633806;--err-t:#501313;
+    --bg:#0f0f0f;--bg2:#1a1a1a;--bg3:#242424;
+    --border:#2a2a2a;--text:#e8e8e8;--text2:#888;--text3:#555;
+    --blue:#378ADD;--blue-bg:#0C447C22;
+  }
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;min-height:100vh}
+  .layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+
+  /* SIDEBAR */
+  .sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:20px 0;display:flex;flex-direction:column}
+  .brand{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}
+  .brand-name{font-size:14px;font-weight:600;color:var(--text);letter-spacing:.02em}
+  .brand-sub{font-size:10px;color:var(--text2);margin-top:2px;font-family:monospace}
+  .pulse-row{display:flex;align-items:center;gap:6px;margin-top:8px}
+  .pulse{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .pulse-label{font-size:11px;color:var(--ok)}
+  .nav-section{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);padding:0 20px;margin-bottom:6px}
+  .nav-item{display:flex;align-items:center;gap:8px;padding:8px 20px;cursor:pointer;color:var(--text2);transition:all .15s;font-size:12px}
+  .nav-item:hover{background:var(--bg3);color:var(--text)}
+  .nav-item.active{background:var(--blue-bg);color:var(--blue);border-right:2px solid var(--blue)}
+  .nav-icon{width:14px;height:14px;opacity:.7}
+  .nav-sep{height:1px;background:var(--border);margin:8px 0}
+  .sidebar-footer{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border)}
+  .footer-url{font-size:10px;font-family:monospace;color:var(--text3);word-break:break-all}
+
+  /* MAIN */
+  .main{overflow-y:auto;padding:24px}
+  .page{display:none}.page.active{display:block}
+  .page-title{font-size:18px;font-weight:500;color:var(--text);margin-bottom:4px}
+  .page-sub{font-size:12px;color:var(--text2);margin-bottom:20px}
+
+  /* CARDS */
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+  .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+  .stat-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+  .stat-val{font-size:24px;font-weight:600}
+  .stat-sub{font-size:10px;color:var(--text3);margin-top:3px}
+
+  /* STATUS LIST */
+  .status-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+  .status-row{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;transition:border-color .2s}
+  .status-row:hover{border-color:#3a3a3a}
+  .status-left{display:flex;align-items:center;gap:10px}
+  .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .d-ok{background:var(--ok)}.d-err{background:var(--err)}.d-warn{background:var(--warn)}.d-load{background:var(--text3);animation:pulse 1s infinite}
+  .status-name{font-size:13px;font-weight:500;color:var(--text)}
+  .status-desc{font-size:11px;color:var(--text2);margin-top:1px}
+  .badge{font-size:10px;padding:3px 9px;border-radius:5px;font-weight:500}
+  .badge-ok{background:var(--ok-bg);color:var(--ok-t)}
+  .badge-err{background:var(--err-bg);color:var(--err-t)}
+  .badge-warn{background:var(--warn-bg);color:var(--warn-t)}
+  .badge-load{background:var(--bg3);color:var(--text2)}
+
+  /* PANELS */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+  .panel{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px}
+  .panel-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+  .panel-title span{font-size:10px;font-weight:400;color:var(--text3)}
+
+  /* LOG */
+  .log-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;height:180px;overflow-y:auto;font-family:monospace;font-size:11px;line-height:1.8}
+  .log-ok{color:var(--ok)}.log-err{color:var(--err)}.log-warn{color:var(--warn)}.log-info{color:var(--blue)}.log-def{color:var(--text2)}
+
+  /* SENTIMENT BAR */
+  .sent-bar-wrap{height:5px;border-radius:3px;background:var(--bg3);margin:8px 0;overflow:hidden}
+  .sent-bar-fill{height:100%;border-radius:3px;background:var(--ok);transition:width .8s ease}
+  .sent-labels{display:flex;justify-content:space-between;font-size:10px;font-family:monospace}
+
+  /* BUTTONS */
+  .btn{font-size:12px;padding:8px 16px;border-radius:8px;border:1px solid var(--border);cursor:pointer;background:var(--bg3);color:var(--text);font-weight:500;transition:all .15s;width:100%;margin-top:8px}
+  .btn:hover{background:#2f2f2f;border-color:#444}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn-primary{background:var(--blue-bg);border-color:var(--blue);color:var(--blue)}
+  .btn-primary:hover{background:#185FA540}
+  .wh-result{margin-top:8px;font-size:11px;font-family:monospace;padding:8px 10px;border-radius:6px;display:none}
+  .wh-ok{background:var(--ok-bg);color:var(--ok-t)}.wh-err{background:var(--err-bg);color:var(--err-t)}.wh-warn{background:var(--warn-bg);color:var(--warn-t)}
+
+  /* TIMELINE */
+  .timeline{display:flex;flex-direction:column;gap:0}
+  .tl-item{display:flex;gap:12px;padding-bottom:14px;position:relative}
+  .tl-item:not(:last-child)::before{content:'';position:absolute;left:7px;top:18px;bottom:0;width:1px;background:var(--border)}
+  .tl-dot{width:15px;height:15px;border-radius:50%;border:2px solid var(--border);background:var(--bg2);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center}
+  .tl-dot.done{border-color:var(--ok);background:var(--ok)}
+  .tl-dot.pending{border-color:var(--warn)}
+  .tl-body{flex:1}
+  .tl-title{font-size:12px;font-weight:500;color:var(--text)}
+  .tl-desc{font-size:11px;color:var(--text2);margin-top:2px;line-height:1.5}
+  .tl-badge{font-size:10px;padding:1px 7px;border-radius:4px;margin-left:6px;vertical-align:middle}
+
+  /* SIGNAL CARD */
+  .signal-empty{text-align:center;padding:32px;color:var(--text3);font-size:12px}
+  .signal-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px}
+  .signal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .signal-side{font-size:14px;font-weight:600}
+  .signal-side.buy{color:var(--ok)}.signal-side.sell{color:var(--err)}
+  .signal-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .signal-field{background:var(--bg2);border-radius:6px;padding:6px 8px}
+  .signal-field-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+  .signal-field-val{font-size:12px;font-weight:500;color:var(--text);margin-top:1px;font-family:monospace}
+  .divider{height:1px;background:var(--border);margin:16px 0}
+  .ts{font-size:10px;font-family:monospace;color:var(--text3);text-align:right;margin-top:8px}
 </style>
+</head>
+<body>
 
-<div class="dashboard">
+<div class="layout">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="brand">
+      <div class="brand-name">TRADESWITHMK BOT</div>
+      <div class="brand-sub">v2 — Production</div>
+      <div class="pulse-row">
+        <div class="pulse" id="mainPulse"></div>
+        <span class="pulse-label" id="mainStatus">Online</span>
+      </div>
+    </div>
 
-<div class="header">
-  <div class="header-left">
-    <div class="pulse" id="mainPulse"></div>
-    <div>
-      <div class="title-main">XAU Scalper Bot — Dashboard</div>
-      <div class="title-sub" id="mainUrl">web-production-63ee.up.railway.app</div>
+    <div class="nav-section" style="margin-top:4px">Navigation</div>
+    <div class="nav-item active" onclick="showPage('dashboard',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" onclick="showPage('sentiment',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 8h6M8 5v6"/></svg>
+      Sentiment géo
+    </div>
+    <div class="nav-item" onclick="showPage('signals',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 12L6 6l3 4 2-3 3 5z"/></svg>
+      Signaux
+    </div>
+    <div class="nav-item" onclick="showPage('setup',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.1 3.1l1.4 1.4M11.5 11.5l1.4 1.4M3.1 12.9l1.4-1.4M11.5 4.5l1.4-1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Configuration
+    </div>
+
+    <div class="nav-sep"></div>
+    <div class="nav-section">API</div>
+    <div class="nav-item" onclick="openLink('https://web-production-63ee.up.railway.app/docs')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6h6M5 9h4"/></svg>
+      Swagger UI ↗
+    </div>
+    <div class="nav-item" onclick="openLink('https://github.com/mkindustry/tradeswithmk-bot')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub ↗
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="footer-url" id="sideUrl">web-production-63ee.up.railway.app</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:4px" id="sideRefresh">Actualisation auto : 60s</div>
     </div>
   </div>
-  <button class="refresh-btn" onclick="runAllChecks()">Rafraîchir tout ↻</button>
-</div>
 
-<div class="grid-4">
-  <div class="stat"><div class="stat-label">Backend</div><div class="stat-val" id="s-backend">...</div><div class="stat-sub" id="s-backend-sub">Railway</div></div>
-  <div class="stat"><div class="stat-label">Sentiment</div><div class="stat-val" id="s-sentiment">...</div><div class="stat-sub" id="s-sentiment-sub">NewsAPI</div></div>
-  <div class="stat"><div class="stat-label">Latence</div><div class="stat-val" id="s-latency">...</div><div class="stat-sub">ms</div></div>
-  <div class="stat"><div class="stat-label">Signaux</div><div class="stat-val" id="s-signals">0</div><div class="stat-sub">cette session</div></div>
-</div>
+  <!-- MAIN CONTENT -->
+  <div class="main">
 
-<div class="section">Statut des composants</div>
-<div class="checks">
-  <div class="check-row">
-    <div class="check-left">
-      <div class="dot dot-loading" id="dot-api"></div>
-      <div><div class="check-name">API Backend</div><div class="check-desc" id="desc-api">Vérification en cours...</div></div>
+    <!-- PAGE: DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub" id="dash-sub">Vérification en cours...</div>
+
+      <div class="grid-4">
+        <div class="stat-card"><div class="stat-label">Backend</div><div class="stat-val" id="s-api" style="color:var(--text3)">—</div><div class="stat-sub">Railway</div></div>
+        <div class="stat-card"><div class="stat-label">Latence</div><div class="stat-val" id="s-lat" style="color:var(--text3)">—</div><div class="stat-sub">ms</div></div>
+        <div class="stat-card"><div class="stat-label">Sentiment</div><div class="stat-val" id="s-sent" style="color:var(--text3)">—</div><div class="stat-sub" id="s-sent-sub">—</div></div>
+        <div class="stat-card"><div class="stat-label">Tests réussis</div><div class="stat-val" id="s-tests" style="color:var(--text3)">0</div><div class="stat-sub">cette session</div></div>
+      </div>
+
+      <div class="status-list">
+        <div class="status-row"><div class="status-left"><div class="status-dot d-load" id="d-api"></div><div><div class="status-name">API Backend</div><div class="status-desc" id="dd-api">Vérification...</div></div></div><span class="badge badge-load" id="b-api">—</span></div>
+        <div class="status-row"><div class="status-left"><div class="status-dot d-load" id="d-sent"></div><div><div class="status-name">Sentiment géopolitique</div><div class="status-desc" id="dd-sent">Vérification...</div></div></div><span class="badge badge-load" id="b-sent">—</span></div>
+        <div class="status-row"><div class="status-left"><div class="status-dot d-load" id="d-docs"></div><div><div class="status-name">Swagger API Docs</div><div class="status-desc" id="dd-docs">Vérification...</div></div></div><span class="badge badge-load" id="b-docs">—</span></div>
+        <div class="status-row"><div class="status-left"><div class="status-dot d-warn" id="d-wh"></div><div><div class="status-name">Webhook signal</div><div class="status-desc" id="dd-wh">Test manuel requis</div></div></div><span class="badge badge-warn" id="b-wh">En attente</span></div>
+        <div class="status-row"><div class="status-left"><div class="status-dot d-warn" id="d-tg"></div><div><div class="status-name">Telegram Bot</div><div class="status-desc" id="dd-tg">Configurer token + chat ID</div></div></div><span class="badge badge-warn" id="b-tg">À configurer</span></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-title">Test signal BUY <span id="wh-time"></span></div>
+          <div style="font-size:11px;color:var(--text2);margin-bottom:4px">Simule un signal EMA_STACK LONDON score 78 et vérifie la chaîne complète.</div>
+          <button class="btn btn-primary" id="testBtn" onclick="testWebhook()">Envoyer signal BUY test ↗</button>
+          <div class="wh-result" id="wh-result"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Sentiment XAU live <span id="sent-ts"></span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--text2)">Biais global</span><span style="font-weight:600" id="sent-bias">—</span></div>
+          <div class="sent-bar-wrap"><div class="sent-bar-fill" id="sent-fill" style="width:50%"></div></div>
+          <div class="sent-labels"><span style="color:var(--ok)" id="sent-bull">BULLISH 0%</span><span style="color:var(--err)" id="sent-bear">0% BEARISH</span></div>
+          <div style="margin-top:10px;font-size:11px;color:var(--text2)">Articles : <span id="sent-count" style="color:var(--text);font-weight:500">—</span> &nbsp;|&nbsp; Urgents : <span id="sent-urgent" style="color:var(--warn);font-weight:500">—</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Logs <span id="log-count">0 entrées</span></div>
+        <div class="log-box" id="logBox"></div>
+      </div>
+      <div class="ts" id="lastTs">—</div>
     </div>
-    <span class="check-badge b-loading" id="badge-api">—</span>
-  </div>
-  <div class="check-row">
-    <div class="check-left">
-      <div class="dot dot-loading" id="dot-sent"></div>
-      <div><div class="check-name">Module Sentiment</div><div class="check-desc" id="desc-sent">Vérification en cours...</div></div>
-    </div>
-    <span class="check-badge b-loading" id="badge-sent">—</span>
-  </div>
-  <div class="check-row">
-    <div class="check-left">
-      <div class="dot dot-loading" id="dot-docs"></div>
-      <div><div class="check-name">API Docs (Swagger)</div><div class="check-desc" id="desc-docs">Vérification en cours...</div></div>
-    </div>
-    <span class="check-badge b-loading" id="badge-docs">—</span>
-  </div>
-  <div class="check-row">
-    <div class="check-left">
-      <div class="dot dot-warn" id="dot-wh"></div>
-      <div><div class="check-name">Webhook endpoint</div><div class="check-desc" id="desc-wh">En attente du test manuel</div></div>
-    </div>
-    <span class="check-badge b-warn" id="badge-wh">En attente</span>
-  </div>
-  <div class="check-row">
-    <div class="check-left">
-      <div class="dot dot-warn" id="dot-tg"></div>
-      <div><div class="check-name">Telegram Bot</div><div class="check-desc" id="desc-tg">Token requis pour tester</div></div>
-    </div>
-    <span class="check-badge b-warn" id="badge-tg">Non configuré</span>
-  </div>
-</div>
 
-<div class="flex-row">
-  <div class="panel">
-    <div class="panel-title">Sentiment géopolitique XAU <span id="sent-time" style="font-size:10px;font-weight:400;color:var(--color-text-secondary)">—</span></div>
-    <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
-      <span style="color:var(--color-text-secondary)">Biais global :</span>
-      <span style="font-weight:500" id="sent-bias">—</span>
+    <!-- PAGE: SENTIMENT -->
+    <div class="page" id="page-sentiment">
+      <div class="page-title">Sentiment géopolitique</div>
+      <div class="page-sub">Flux de news XAU/USD analysé par Claude Haiku en temps réel</div>
+      <div class="panel" id="sent-articles-panel">
+        <div class="panel-title">Chargement des articles...</div>
+      </div>
+      <button class="btn" onclick="loadSentimentPage()" style="width:auto;padding:8px 20px">Rafraîchir le flux ↻</button>
     </div>
-    <div class="sentiment-bar"><div class="sentiment-fill" id="sent-fill" style="width:50%"></div></div>
-    <div class="sentiment-labels"><span class="bull" id="sent-bull">BULLISH 0%</span><span class="bear" id="sent-bear">0% BEARISH</span></div>
-    <div style="margin-top:8px;font-size:11px;color:var(--color-text-secondary)">Articles analysés : <span id="sent-count" style="font-weight:500;color:var(--color-text-primary)">—</span></div>
+
+    <!-- PAGE: SIGNALS -->
+    <div class="page" id="page-signals">
+      <div class="page-title">Signaux</div>
+      <div class="page-sub">Historique des signaux testés cette session</div>
+      <div id="signals-list"><div class="signal-empty">Aucun signal envoyé — utilise le bouton test sur le Dashboard</div></div>
+    </div>
+
+    <!-- PAGE: SETUP -->
+    <div class="page" id="page-setup">
+      <div class="page-title">Configuration</div>
+      <div class="page-sub">État de la configuration du bot TRADESWITHMK</div>
+      <div class="panel" style="margin-bottom:12px">
+        <div class="panel-title">Checklist de déploiement</div>
+        <div class="timeline">
+          <div class="tl-item"><div class="tl-dot done"></div><div class="tl-body"><div class="tl-title">GitHub — Code pushé <span class="tl-badge badge badge-ok">✓ Fait</span></div><div class="tl-desc">29 fichiers — github.com/mkindustry/tradeswithmk-bot</div></div></div>
+          <div class="tl-item"><div class="tl-dot done"></div><div class="tl-body"><div class="tl-title">Railway — Backend déployé <span class="tl-badge badge badge-ok">✓ Fait</span></div><div class="tl-desc">web-production-63ee.up.railway.app — Python 3.11.15</div></div></div>
+          <div class="tl-item"><div class="tl-dot done"></div><div class="tl-body"><div class="tl-title">PYTHONPATH — Fix imports <span class="tl-badge badge badge-ok">✓ Fait</span></div><div class="tl-desc">PYTHONPATH=/app/backend configuré dans Railway Variables</div></div></div>
+          <div class="tl-item"><div class="tl-dot pending"></div><div class="tl-body"><div class="tl-title">API Keys — Vraies clés <span class="tl-badge badge badge-warn">En attente</span></div><div class="tl-desc">Remplacer les placeholders : FINNHUB_API_KEY, NEWS_API_KEY, ANTHROPIC_API_KEY dans Railway → Variables</div></div></div>
+          <div class="tl-item"><div class="tl-dot pending"></div><div class="tl-body"><div class="tl-title">Telegram — Bot configuré <span class="tl-badge badge badge-warn">En attente</span></div><div class="tl-desc">TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID dans Railway → Variables</div></div></div>
+          <div class="tl-item"><div class="tl-dot pending"></div><div class="tl-body"><div class="tl-title">TradingView — Alerte webhook <span class="tl-badge badge badge-warn">En attente</span></div><div class="tl-desc">Créer alerte sur XAUUSD M5/M15 → webhook → https://web-production-63ee.up.railway.app/webhook</div></div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">URLs importantes</div>
+        <table style="width:100%;font-size:12px;border-collapse:collapse">
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 0;color:var(--text2)">Backend</td><td style="padding:8px 0;font-family:monospace;color:var(--blue)">web-production-63ee.up.railway.app</td></tr>
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 0;color:var(--text2)">Webhook URL</td><td style="padding:8px 0;font-family:monospace;color:var(--blue)">.../webhook</td></tr>
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 0;color:var(--text2)">Swagger Docs</td><td style="padding:8px 0;font-family:monospace;color:var(--blue)">.../docs</td></tr>
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 0;color:var(--text2)">Sentiment live</td><td style="padding:8px 0;font-family:monospace;color:var(--blue)">.../sentiment/live</td></tr>
+          <tr><td style="padding:8px 0;color:var(--text2)">Webhook secret</td><td style="padding:8px 0;font-family:monospace;color:var(--text)">xau2024secretbot</td></tr>
+        </table>
+      </div>
+    </div>
+
   </div>
-
-  <div class="panel">
-    <div class="panel-title">Test Webhook Signal</div>
-    <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:8px">Envoie un signal BUY simulé vers le backend et vérifie la réponse.</div>
-    <button class="test-btn" id="testBtn" onclick="testWebhook()">Envoyer signal test BUY ↗</button>
-    <div id="wh-result" style="margin-top:8px;font-size:11px;font-family:var(--font-mono);color:var(--color-text-secondary);display:none"></div>
-  </div>
-</div>
-
-<div class="panel">
-  <div class="panel-title">Logs en temps réel <span id="log-count" style="font-size:10px;font-weight:400;color:var(--color-text-secondary)">0 entrées</span></div>
-  <div class="log" id="logArea"><span class="log-line log-info">Dashboard initialisé — lancement des vérifications...</span></div>
-</div>
-
-<div class="divider"></div>
-<div class="timestamp" id="lastCheck">Dernière vérification : —</div>
-
 </div>
 
 <script>
-const BASE = 'https://web-production-63ee.up.railway.app';
-let signalCount = 0;
+const BASE='https://web-production-63ee.up.railway.app';
+let testCount=0, signals=[];
 
-function log(msg, type='info'){
-  const area = document.getElementById('logArea');
-  const line = document.createElement('span');
-  line.className = `log-line log-${type}`;
-  const ts = new Date().toLocaleTimeString('fr-FR');
-  line.textContent = `[${ts}] ${msg}`;
-  area.appendChild(line);
-  area.scrollTop = area.scrollHeight;
-  document.getElementById('log-count').textContent = area.children.length + ' entrées';
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  el.classList.add('active');
+  if(id==='sentiment') loadSentimentPage();
 }
 
-function setCheck(id, status, badge, desc){
-  const dot = document.getElementById('dot-'+id);
-  const bdg = document.getElementById('badge-'+id);
-  const dsc = document.getElementById('desc-'+id);
-  dot.className = 'dot dot-' + (status==='ok'?'ok':status==='err'?'err':'warn');
-  bdg.className = 'check-badge b-' + (status==='ok'?'ok':status==='err'?'err':'warn');
-  bdg.textContent = badge;
-  if(dsc) dsc.textContent = desc;
+function log(msg,type='def'){
+  const box=document.getElementById('logBox');
+  const line=document.createElement('div');
+  line.className='log-'+type;
+  const ts=new Date().toLocaleTimeString('fr-FR');
+  line.textContent=`[${ts}] ${msg}`;
+  box.appendChild(line);
+  box.scrollTop=box.scrollHeight;
+  document.getElementById('log-count').textContent=box.children.length+' entrées';
+}
+
+function setStatus(id,state,badge,desc){
+  const states={ok:'d-ok',err:'d-err',warn:'d-warn',load:'d-load'};
+  const badges={ok:'badge-ok',err:'badge-err',warn:'badge-warn',load:'badge-load'};
+  document.getElementById('d-'+id).className='status-dot '+states[state];
+  const b=document.getElementById('b-'+id);
+  b.className='badge '+badges[state];
+  b.textContent=badge;
+  document.getElementById('dd-'+id).textContent=desc;
 }
 
 async function checkAPI(){
-  const t0 = Date.now();
-  try {
-    const r = await fetch(BASE+'/', {signal: AbortSignal.timeout(8000)});
-    const d = await r.json();
-    const ms = Date.now()-t0;
-    if(d.status === 'ok'){
-      setCheck('api','ok','✓ Online', `service: ${d.service}`);
-      document.getElementById('s-backend').textContent = '✓';
-      document.getElementById('s-backend').style.color = 'var(--ok)';
-      document.getElementById('s-latency').textContent = ms;
-      document.getElementById('s-latency').style.color = ms < 500 ? 'var(--ok)' : 'var(--warn)';
-      document.getElementById('mainPulse').style.background = 'var(--ok)';
-      log(`API OK — ${d.service} — ${ms}ms`, 'ok');
-    } else {
-      setCheck('api','err','Erreur', JSON.stringify(d));
-      log('API réponse inattendue: '+JSON.stringify(d),'err');
+  const t0=Date.now();
+  try{
+    const r=await fetch(BASE+'/',{signal:AbortSignal.timeout(8000)});
+    const d=await r.json();
+    const ms=Date.now()-t0;
+    if(d.status==='ok'){
+      setStatus('api','ok','✓ Online',`${d.service} — ${ms}ms`);
+      document.getElementById('s-api').textContent='✓';
+      document.getElementById('s-api').style.color='var(--ok)';
+      document.getElementById('s-lat').textContent=ms;
+      document.getElementById('s-lat').style.color=ms<500?'var(--ok)':'var(--warn)';
+      document.getElementById('mainPulse').style.background='var(--ok)';
+      document.getElementById('mainStatus').textContent='Online';
+      document.getElementById('mainStatus').style.color='var(--ok)';
+      log(`API OK — ${d.service} — ${ms}ms`,'ok');
+      return true;
     }
-  } catch(e){
-    setCheck('api','err','Hors ligne', e.message);
-    document.getElementById('s-backend').textContent = '✗';
-    document.getElementById('s-backend').style.color = 'var(--err)';
-    document.getElementById('mainPulse').style.background = 'var(--err)';
+  }catch(e){
+    setStatus('api','err','Hors ligne',e.message);
+    document.getElementById('s-api').textContent='✗';
+    document.getElementById('s-api').style.color='var(--err)';
+    document.getElementById('mainPulse').style.background='var(--err)';
     log('API ERREUR: '+e.message,'err');
+    return false;
   }
 }
 
 async function checkSentiment(){
-  try {
-    const r = await fetch(BASE+'/sentiment/summary', {signal: AbortSignal.timeout(15000)});
-    const d = await r.json();
-    const bias = d.overall_bias || 'MIXED';
-    const bull = d.bull_pct || 0;
-    const bear = d.bear_pct || 0;
-    setCheck('sent','ok','✓ Actif', `${bias} — bull ${bull}% / bear ${bear}%`);
-    document.getElementById('s-sentiment').textContent = bias;
-    document.getElementById('s-sentiment').style.color = bias==='BULLISH'?'var(--ok)':bias==='BEARISH'?'var(--err)':'var(--color-text-primary)';
-    document.getElementById('s-sentiment-sub').textContent = d.high_urgency_count ? d.high_urgency_count+' urgents' : 'Aucune urgence';
-    document.getElementById('sent-bias').textContent = bias;
-    document.getElementById('sent-fill').style.width = bull+'%';
-    document.getElementById('sent-bull').textContent = 'BULLISH '+bull+'%';
-    document.getElementById('sent-bear').textContent = bear+'% BEARISH';
-    document.getElementById('sent-time').textContent = d.fetched_at ? d.fetched_at.slice(11,16)+' UTC' : '';
-    document.getElementById('sent-count').textContent = d.top_urgent?.length || '0 (clés API requises)';
-    log(`Sentiment: ${bias} — bull ${bull}% / bear ${bear}%`, bias==='BULLISH'?'ok':bias==='BEARISH'?'err':'info');
-  } catch(e){
-    setCheck('sent','err','Erreur', e.message);
+  try{
+    const r=await fetch(BASE+'/sentiment/summary',{signal:AbortSignal.timeout(15000)});
+    const d=await r.json();
+    const bias=d.overall_bias||'MIXED';
+    const bull=d.bull_pct||0, bear=d.bear_pct||0;
+    setStatus('sent','ok','✓ Actif',`${bias} — ${bull}% bull / ${bear}% bear`);
+    document.getElementById('s-sent').textContent=bias;
+    document.getElementById('s-sent').style.color=bias==='BULLISH'?'var(--ok)':bias==='BEARISH'?'var(--err)':'var(--text)';
+    document.getElementById('s-sent-sub').textContent=(d.high_urgency_count||0)+' urgents';
+    document.getElementById('sent-bias').textContent=bias;
+    document.getElementById('sent-bias').style.color=bias==='BULLISH'?'var(--ok)':bias==='BEARISH'?'var(--err)':'var(--text)';
+    document.getElementById('sent-fill').style.width=bull+'%';
+    document.getElementById('sent-bull').textContent='BULLISH '+bull+'%';
+    document.getElementById('sent-bear').textContent=bear+'% BEARISH';
+    document.getElementById('sent-count').textContent=d.top_urgent?.length||'0';
+    document.getElementById('sent-urgent').textContent=d.high_urgency_count||'0';
+    const t=d.fetched_at?d.fetched_at.slice(11,16)+' UTC':'';
+    document.getElementById('sent-ts').textContent=t;
+    log(`Sentiment: ${bias} bull:${bull}% bear:${bear}%`,bias==='BULLISH'?'ok':bias==='BEARISH'?'err':'info');
+  }catch(e){
+    setStatus('sent','err','Erreur',e.message);
     log('Sentiment ERREUR: '+e.message,'err');
   }
 }
 
 async function checkDocs(){
-  try {
-    const r = await fetch(BASE+'/docs', {signal: AbortSignal.timeout(8000)});
-    if(r.ok){
-      setCheck('docs','ok','✓ Disponible', 'Swagger UI accessible');
-      log('Swagger UI OK', 'ok');
-    } else {
-      setCheck('docs','err','Erreur '+r.status, 'Docs inaccessibles');
-    }
-  } catch(e){
-    setCheck('docs','err','Erreur', e.message);
+  try{
+    const r=await fetch(BASE+'/docs',{signal:AbortSignal.timeout(8000)});
+    if(r.ok){setStatus('docs','ok','✓ Disponible','Swagger UI accessible');log('Swagger UI OK','ok');}
+    else setStatus('docs','warn','Erreur '+r.status,'Docs inaccessibles');
+  }catch(e){
+    setStatus('docs','err','Erreur',e.message);
     log('Docs ERREUR: '+e.message,'err');
   }
 }
 
 async function testWebhook(){
-  const btn = document.getElementById('testBtn');
-  const res = document.getElementById('wh-result');
-  btn.disabled = true;
-  btn.textContent = 'Envoi en cours...';
-  res.style.display = 'block';
-  res.style.color = 'var(--color-text-secondary)';
-  res.textContent = 'En attente de réponse...';
-  log('Test webhook lancé — signal BUY simulé...', 'info');
-
-  const payload = {
-    secret: 'xau2024secretbot',
-    symbol: 'XAUUSD',
-    side: 'BUY',
-    setup: 'EMA_STACK',
-    session: 'LONDON',
-    score: 78,
-    entry: '3320.50',
-    sl: '3312.80',
-    tp1: '3328.20',
-    tp2: '3335.90',
-    tp3: '3343.60',
-    atr: '5.20',
-    adx: '28.5',
-    rsi: '54.2',
-    time: String(Date.now())
-  };
-
-  try {
-    const r = await fetch(BASE+'/webhook', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(20000)
-    });
-    const d = await r.json();
-    const status = d.status;
-
-    if(status === 'dispatched'){
-      setCheck('wh','ok','✓ Signal envoyé', 'Webhook → Telegram OK');
-      res.style.color = 'var(--ok)';
-      res.textContent = '✓ Dispatched — vérifie Telegram !';
-      signalCount++;
-      document.getElementById('s-signals').textContent = signalCount;
-      log('Signal dispatched! ML prob: '+(d.ml_prob||'N/A')+' — Telegram ✓', 'ok');
-    } else if(status === 'rejected'){
-      setCheck('wh','warn','Rejeté: '+d.reason, 'Signal filtré par le backend');
-      res.style.color = 'var(--warn)';
-      res.textContent = '⚠ Rejeté — raison: '+d.reason+(d.details? ' / '+JSON.stringify(d.details):'');
-      log('Signal rejeté: '+d.reason, 'warn');
+  const btn=document.getElementById('testBtn');
+  const res=document.getElementById('wh-result');
+  btn.disabled=true; btn.textContent='Envoi en cours...';
+  res.style.display='block'; res.className='wh-result';
+  res.textContent='En attente de réponse...';
+  log('Test webhook lancé — signal BUY simulé LONDON EMA_STACK','info');
+  const payload={secret:'xau2024secretbot',symbol:'XAUUSD',side:'BUY',setup:'EMA_STACK',session:'LONDON',score:78,entry:'3320.50',sl:'3312.80',tp1:'3328.20',tp2:'3335.90',tp3:'3343.60',atr:'5.20',adx:'28.5',rsi:'54.2',time:String(Date.now())};
+  try{
+    const r=await fetch(BASE+'/webhook',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:AbortSignal.timeout(20000)});
+    const d=await r.json();
+    const ts=new Date().toLocaleTimeString('fr-FR');
+    document.getElementById('wh-time').textContent=ts;
+    if(d.status==='dispatched'){
+      setStatus('wh','ok','✓ Dispatché','Signal envoyé → Telegram');
+      res.className='wh-result wh-ok';
+      res.textContent='✓ Signal dispatché — ML prob: '+(d.ml_prob?.toFixed(2)||'N/A')+' — Vérifie Telegram !';
+      testCount++; document.getElementById('s-tests').textContent=testCount;
+      document.getElementById('s-tests').style.color='var(--ok)';
+      log('Signal dispatché! ML: '+(d.ml_prob?.toFixed(2)||'N/A'),'ok');
+      addSignal(payload,d,'dispatched');
+    } else if(d.status==='rejected'){
+      setStatus('wh','warn','Rejeté: '+d.reason,'Filtré par le backend');
+      res.className='wh-result wh-warn';
+      res.textContent='⚠ Rejeté — '+d.reason+(d.details?' : '+JSON.stringify(d.details):'');
+      log('Signal rejeté: '+d.reason,'warn');
+      addSignal(payload,d,'rejected');
     } else {
-      res.textContent = JSON.stringify(d);
-      log('Réponse: '+JSON.stringify(d),'info');
+      res.className='wh-result'; res.style.color='var(--text2)';
+      res.textContent=JSON.stringify(d);
     }
-  } catch(e){
-    setCheck('wh','err','Erreur', e.message);
-    res.style.color = 'var(--err)';
-    res.textContent = '✗ Erreur: '+e.message;
+  }catch(e){
+    setStatus('wh','err','Erreur',e.message);
+    res.className='wh-result wh-err'; res.textContent='✗ '+e.message;
     log('Webhook ERREUR: '+e.message,'err');
   }
-
-  btn.disabled = false;
-  btn.textContent = 'Envoyer signal test BUY ↗';
+  btn.disabled=false; btn.textContent='Envoyer signal BUY test ↗';
 }
 
-async function runAllChecks(){
-  log('--- Vérification complète lancée ---','info');
-  document.getElementById('lastCheck').textContent = 'Dernière vérification : '+new Date().toLocaleTimeString('fr-FR');
+function addSignal(payload,result,status){
+  const list=document.getElementById('signals-list');
+  if(list.querySelector('.signal-empty')) list.innerHTML='';
+  const card=document.createElement('div');
+  card.className='signal-card';
+  const col=status==='dispatched'?'var(--ok)':'var(--warn)';
+  card.innerHTML=`<div class="signal-header"><span class="signal-side buy">${payload.side}</span><span style="font-size:10px;color:var(--text3)">${new Date().toLocaleTimeString('fr-FR')} — ${payload.setup} — ${payload.session}</span><span class="badge ${status==='dispatched'?'badge-ok':'badge-warn'}">${status}</span></div>
+  <div class="signal-grid">
+    <div class="signal-field"><div class="signal-field-label">Entry</div><div class="signal-field-val">${payload.entry}</div></div>
+    <div class="signal-field"><div class="signal-field-label">Stop Loss</div><div class="signal-field-val">${payload.sl}</div></div>
+    <div class="signal-field"><div class="signal-field-label">Score</div><div class="signal-field-val">${payload.score}/100</div></div>
+    <div class="signal-field"><div class="signal-field-label">TP1</div><div class="signal-field-val">${payload.tp1}</div></div>
+    <div class="signal-field"><div class="signal-field-label">TP2</div><div class="signal-field-val">${payload.tp2}</div></div>
+    <div class="signal-field"><div class="signal-field-label">ML Prob</div><div class="signal-field-val">${result.ml_prob?.toFixed(2)||'N/A'}</div></div>
+  </div>`;
+  list.insertBefore(card, list.firstChild);
+}
+
+async function loadSentimentPage(){
+  const panel=document.getElementById('sent-articles-panel');
+  panel.innerHTML='<div class="panel-title">Chargement...</div>';
+  try{
+    const r=await fetch(BASE+'/sentiment/live',{signal:AbortSignal.timeout(20000)});
+    const d=await r.json();
+    const articles=d.articles||[];
+    if(!articles.length){panel.innerHTML='<div class="panel-title">Sentiment géopolitique</div><div style="color:var(--text2);font-size:12px;padding:8px 0">Aucun article — les clés NewsAPI/Finnhub sont en placeholder dans Railway. Ajoute les vraies clés pour voir le flux de news.</div>';return;}
+    let html=`<div class="panel-title">Flux de news XAU <span>${articles.length} articles — ${d.overall_bias||'MIXED'}</span></div>`;
+    articles.slice(0,15).forEach(a=>{
+      const impColor=a.impact==='BULLISH'?'var(--ok)':a.impact==='BEARISH'?'var(--err)':'var(--text2)';
+      const urg=a.urgency==='HIGH'?'⚠ ':'';
+      html+=`<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+          <div style="flex:1"><div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:3px">${urg}${(a.title||'').slice(0,90)}</div>
+          <div style="font-size:10px;color:var(--text2)">${a.source_name||''} — ${(a.published_at||'').slice(0,16)}</div>
+          ${a.reason?`<div style="font-size:10px;color:var(--text3);font-style:italic;margin-top:2px">${a.reason}</div>`:''}
+          </div>
+          <div style="text-align:right;flex-shrink:0"><span style="font-size:11px;font-weight:600;color:${impColor}">${a.impact||'—'}</span><br><span style="font-size:10px;color:var(--text3)">${'●'.repeat(a.intensity||1)}</span></div>
+        </div></div>`;
+    });
+    panel.innerHTML=html;
+  }catch(e){
+    panel.innerHTML=`<div class="panel-title">Erreur</div><div style="color:var(--err);font-size:12px">${e.message}</div>`;
+  }
+}
+
+async function runAll(){
+  document.getElementById('dash-sub').textContent='Vérification en cours...';
+  log('--- Vérification complète ---','info');
   await checkAPI();
   await checkSentiment();
   await checkDocs();
+  const ts=new Date().toLocaleString('fr-FR');
+  document.getElementById('lastTs').textContent='Dernière vérification : '+ts;
+  document.getElementById('dash-sub').textContent='Dernière mise à jour : '+new Date().toLocaleTimeString('fr-FR');
   log('--- Vérification terminée ---','info');
 }
 
-runAllChecks();
-setInterval(runAllChecks, 60000);
+runAll();
+setInterval(runAll,60000);
 </script>
+</body>
+</html>
